@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -12,6 +13,7 @@ public class AISMentorship {
         String email;
         String departement;
         String specialization;
+        int menteeCount;
         List<mentees>menteeNames;
     }
     static class mentees {
@@ -23,20 +25,29 @@ public class AISMentorship {
 
     public static void main(String args[]) {
         List<mentors> mentorList = new ArrayList<mentors>();
-        List<mentees> menteeList = new ArrayList<mentees>();
-        List<mentees> mappedMenteeList = new ArrayList<mentees>();
+        List<mentees> unMappedmenteeList = new ArrayList<mentees>();
+        HashMap<mentees, mentors> mappedMenteesMap = new HashMap<mentees, mentors>();
         //TODO populate mentorList and menteeList from dummy data
 
         /*
          * The algorithm below is a brute algorithm, better implementation will be a bucket sort.
          */
-        for(int mentorNumber = 0; mentorNumber < MAX_MENTEE_PER_MENTOR; mentorNumber++) {
-            int menteeCount = 0;
-            mentorList.get(mentorNumber).menteeNames = new ArrayList<mentees>();
-            while(menteeCount < MAX_MENTEE_PER_MENTOR) {
-                mentorList.get(mentorNumber).menteeNames
-                // TODO put mentees into mentorList.get(mentorNumber).menteeNames
+        for(mentors mentor : mentorList) {
+            if(mentor.menteeCount < MAX_MENTEE_PER_MENTOR) {
+                //call a function which adds a mentee from the same field
+                //add mentee to the mentor's mentee list
+                //remove mentee from unMappedMenteeList
+                // add mentee to mapped mentee map
             }
         }
+
+        for(mentees mentee : unMappedmenteeList) {
+            //find a mentor with same field as mentee
+            //add mentee to the mentor's mentee list
+            //remove mentee from unmapped mentee list
+            // add mentee to mapped mentee map
+        }
+
+        //create a email thread for all mentors and cc all the mentees in it.
     }
 }
