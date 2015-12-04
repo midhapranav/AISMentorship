@@ -1,20 +1,16 @@
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by midhapranav on 11/24/15.
  */
 public class AISMentorship {
 
-    public static int MAX_MENTEE_PER_MENTOR = 10;
-
     static class Mentors {
         String name;
         String email;
         String departement;
         String specialization;
-        int menteeCount;
+        int menteeCount = 0;
         List<Mentees>menteeNames;
     }
     static class Mentees {
@@ -22,6 +18,7 @@ public class AISMentorship {
         String email;
         String department;
         String specialization;
+        Mentors mentor;
     }
 
     public static List<Mentors> mentorList = new ArrayList<Mentors>();
@@ -37,51 +34,51 @@ public class AISMentorship {
         /*
          * The algorithm below is a brute algorithm, better implementation will be a bucket sort.
          */
-        for(Mentors mentor : mentorList) {
-            if(mentor.menteeCount < MAX_MENTEE_PER_MENTOR) {
-                Mentees newMentee = findSuitableMentee(mentor);
-                mentor.menteeNames.add(newMentee);
-                mappedMenteesMap.put(newMentee, mentor);
-                //unMappedmenteeList.remove(mentee);
-                //the above line may throw Concurrent Array Modification exception, if not remove the checks on the hashMap
-                //and uncomment this line
-            }
-        }
-
-        //TODO sort mentorList based on number of mentees assigned
-
-        for(Mentees mentee : unMappedmenteeList) {
-            if (!mappedMenteesMap.containsKey(mentee)) {
-                Mentors newMentor = findSuitableMentor(mentee);
+        while(mappedMenteesMap.entrySet().size() != unMappedmenteeList.size()) {
+            for (Mentees mentee : unMappedmenteeList) {
+                Mentors newMentor = assignSameSpecializationMentor(mentee);
+                mentee.mentor = newMentor;
                 newMentor.menteeNames.add(mentee);
+                newMentor.menteeCount++;
                 mappedMenteesMap.put(mentee, newMentor);
-                //unMappedmenteeList.remove(mentee);
-                //the above line may throw Concurrent Array Modification exception, if not remove the checks on the hashMap
-                //and uncomment this line
-            } else {
-                //do-nothing
+                Collections.sort(mentorList, (o1, o2) -> o1.menteeCount - o2.menteeCount);
+            }
+            //update unMappedMenteeList
+
+            Iterator iterator = mappedMenteesMap.entrySet().iterator();
+            while(iterator.hasNext()) {
+                HashMap.Entry<Mentees, Mentors> pair = (HashMap.Entry<Mentees, Mentors>) iterator.next();
+                unMappedmenteeList.remove(pair.getKey());
+            }
+            //if still mentees have not been assigned a mentor, assign from the same departement
+
+            for(Mentees mentee : unMappedmenteeList) {
+                Mentors newMentor = assignSameDepartementMentor(mentee);
+                mentee.mentor = newMentor;
+                newMentor.menteeNames.add(mentee);
+                newMentor.menteeCount++;
+                mappedMenteesMap.put(mentee, newMentor);
+                Collections.sort(mentorList, (o1, o2) -> o1.menteeCount - o2.menteeCount);
             }
         }
 
         //create a email thread for all mentors and cc all the mentees in it.
     }
 
-    private static Mentees findSuitableMentee(Mentors mentor) {
-        Mentees newMentee = new Mentees();
-        for(Mentees mentee : unMappedmenteeList) {
-            if(!mappedMenteesMap.containsKey(mentee)) {
-                if (mentee.department.equals(mentor.departement)) {
-                    newMentee = mentee;
-                    break;
-                }
-            } else {
-                //do nothing
+
+    private static Mentors assignSameSpecializationMentor(Mentees mentee) {
+        Mentors newMentor = new Mentors();
+        for(Mentors mentor : mentorList) {
+            if((mentee.department.equals(mentor.departement)) &&
+                    (mentee.specialization.equals(mentor.specialization))) {
+                newMentor = mentor;
+                break;
             }
         }
-        return newMentee;
+        return newMentor;
     }
 
-    private static Mentors findSuitableMentor(Mentees mentee) {
+    private static Mentors assignSameDepartementMentor(Mentees mentee) {
         Mentors newMentor = new Mentors();
         for(Mentors mentor : mentorList) {
             if(mentee.department.equals(mentor.departement)) {
